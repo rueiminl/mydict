@@ -7,8 +7,8 @@ A detailed description of mydict.
 import os
 import re
 import copy
-
 import sys
+from subprocess import call
 sys.path.append('/Users/rueiminl/Desktop/Project/PyLib')
 from appcommands import AppCommands as appcommands
 from flags import Flags as flags
@@ -64,6 +64,7 @@ class Util:
     try:
       for w in d.Words():
         print w
+      print d.Length()
       return SUCCESS
     except Exception as e:
       print e
@@ -121,6 +122,9 @@ class Dict:
   def Words(self):
     return self.words.values()
 
+  def Length(self):
+    return len(self.words)
+
   def AddWord(self, word):
     if word.word in self.words:
       self.words[word.word].count += word.count
@@ -135,7 +139,7 @@ class Dict:
 
   def Diff(self, d):
     for w in d.Words():
-      result.RemoveWord(w)
+      self.RemoveWord(w)
 
   def Import(self, d):
     for w in d.Words():
@@ -164,26 +168,28 @@ class AddWordCmd(MyCmd):
 class ImportCmd(MyCmd):
   """Import all words from an article
 
-  Usage: import file[ checknew]
+  Usage: import file
   """
 
   def Run(self, argv):
 
     d1 = Util.LoadDict(FLAGS.dict)
-    d2 = Util.LoadDictFromArticle(argv[1])
+    d2 = Util.LoadDictFromArticle(argv[0])
     d3 = Dict(d1)
     d1.Import(d2)
-    if len(argv) >= 3 and argv[2] == 'checknew':
-      d2.Diff(d3)
-      Util.ListDict(d2)
+    d2.Diff(d3)
+    Util.ListDict(d2)
     return Util.SaveDict(FLAGS.dict, d1)
 
 
-class DiffCmd(MyCmd):
+class BackupCmd(MyCmd):
+  """Backup the dict.txt to dict.txt.bak
+
+  Usage: backup
+  """
 
   def Run(self, argv):
-    result = FAILURE
-    return result
+    return call(['cp', FLAGS.dict, FLAGS.dict + '.bak'])
 
 
 class ListCmd(MyCmd):
@@ -200,7 +206,7 @@ def main(argv):
   appcommands.AddCmd('add', AddWordCmd)
   appcommands.AddCmd('import', ImportCmd)
   appcommands.AddCmd('ls', ListCmd)
-
+  appcommands.AddCmd('backup', BackupCmd)
 
 if __name__ == '__main__':
   appcommands.Run()
