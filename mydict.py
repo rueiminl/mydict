@@ -1,3 +1,4 @@
+#! /usr/bin/python
 """One-line documentation for mydict module.
 
 A detailed description of mydict.
